@@ -1,13 +1,14 @@
 package com.utcn.scdproiect.Courier;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
+@Builder
 @Entity
 @Data
 @AllArgsConstructor
@@ -19,8 +20,20 @@ public class Courier {
 
     private String name;
 
+    @Column(unique = true)
     private String email;
 
-    ///TODO manager
+    private String password;
+
+    @Builder.Default
+    @Column()
+    private boolean isManager=false;
+
+    // Change manager field to an Integer for manager_id
+    @Column(name = "manager_id")
     private Integer managerId;
+
+    // Optional: List of subordinates for a given manager
+    @OneToMany(mappedBy = "managerId", cascade = CascadeType.ALL)
+    private List<Courier> subordinates;
 }

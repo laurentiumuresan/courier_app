@@ -16,9 +16,9 @@ public class Package {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "courier_id", nullable = true)
-    Courier courier;
+    private Courier courier;
     @Column(updatable = false, nullable = false)
     @CreationTimestamp
     private Date createdOn;

@@ -1,7 +1,9 @@
 package com.utcn.scdproiect.Pkg;
 
 
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +18,7 @@ public class PackageController {
     @Autowired
     private PackageService packageService;
 
-    @PostMapping
+    @PostMapping("/add-package")
     public Package createPackage(@RequestBody Package pkg) {
         return packageService.createPackage(pkg);
     }
@@ -27,33 +29,13 @@ public class PackageController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Package> getPackageById(@PathVariable Integer id) {
-        Optional<Package> pkg = packageService.getPackageById(id);
-        return pkg.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public Optional<Package> getPackageById(@PathVariable Integer id) {
+        return packageService.getPackageById(id);
     }
 
-    // UPDATE an existing package
-    @PutMapping("/{id}")
-    public ResponseEntity<Package> updatePackage(@PathVariable Integer id, @RequestBody Package newPackageData) {
-        try {
-            Package updatedPackage = packageService.updatePackage(id, newPackageData);
-            return ResponseEntity.ok(updatedPackage);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    // DELETE a package by ID
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePackage(@PathVariable Integer id) {
-        Optional<Package> pkg = packageService.getPackageById(id);
-        if (pkg.isPresent()) {
-            packageService.deletePackage(id);
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    public void deletePackage(@PathVariable Integer id) {
+        packageService.deletePackage(id);
     }
 
     @GetMapping("/status/{status}")
@@ -64,5 +46,18 @@ public class PackageController {
     @GetMapping("/courier/{courierId}")
     public List<Package> findPackageByCourier(@PathVariable Integer courierId) {
         return packageService.findPackagesByCourier(courierId);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Package> updatePackage(@PathVariable Integer id, @RequestBody Package updatedPackage) {
+        try {
+            Package updatedPkg = packageService.updatePackage(id, updatedPackage);
+            return new ResponseEntity<>(updatedPkg, HttpStatus.OK);
+        } catch (EntityNotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }
