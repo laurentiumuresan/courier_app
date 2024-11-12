@@ -4,7 +4,6 @@ import { register } from '../services/api'; // Import the correct function
 const RegisterForm = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -14,11 +13,10 @@ const RegisterForm = () => {
     setError('');
 
     try {
-      await register({ name, email, password });
+      await register({ name, email }); // No password included in the register function call
       alert('Registration successful!');
       setName(''); // Reset form fields
       setEmail('');
-      setPassword('');
     } catch (err) {
       console.error("Error registering:", err);
       setError('Registration failed. Please try again.');
@@ -47,14 +45,6 @@ const RegisterForm = () => {
           required
           style={styles.input}
         />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
-          required
-          style={styles.input}
-        />
         <button type="submit" disabled={loading} style={styles.button}>
           {loading ? 'Loading...' : 'Add'}
         </button>
@@ -62,14 +52,16 @@ const RegisterForm = () => {
       </form>
     </div>
   );
-};const styles = {
+};
+
+const styles = {
   container: {
     display: 'flex',
-    justifyContent: 'center', // Centers the form horizontally
-    alignItems: 'flex-start', // Aligns form closer to the top
-    height: '90vh', // Slightly reduce height to avoid scrollbar
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    height: '90vh',
     backgroundColor: '#f5f5f5',
-    paddingTop: '10vh', // Offset from the top for comfortable viewing
+    paddingTop: '10vh',
   },
   form: {
     display: 'flex',

@@ -1,16 +1,12 @@
 package com.utcn.scdproiect.Courier;
-
-import com.utcn.scdproiect.Dto.CourierDTO;
-import com.utcn.scdproiect.Dto.CourierLoginDTO;
 import com.utcn.scdproiect.Pkg.Package;
 import com.utcn.scdproiect.Pkg.PackageRepository;
-import com.utcn.scdproiect.Pkg.PackageStatus;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
+
 
 @Service
 public class CourierService {
@@ -50,7 +46,6 @@ public class CourierService {
     }
 
     public Map<String, Object> getManagerWithDeliveredCount(Integer managerId) {
-        // Initialize delivered count
         Long deliveredCount = 0L;
 
         // Get the manager's information
@@ -60,35 +55,27 @@ public class CourierService {
             List<com.utcn.scdproiect.Pkg.Package> managerPackages = packageRepository.findDeliveredPackagesByCourierId(manager.getId());
             deliveredCount += managerPackages.size();
 
-            List<CourierDTO> subordinates = manager.getSubordinates().stream()
-                    .map(courier -> new CourierDTO(
-                            courier.getId(),
-                            courier.getName(),
-                            courier.getEmail(),
-                            manager.getId(), // Set manager ID as manager's ID
-                            Collections.emptyList() // Empty list for subordinates
-                    ))
-                    .collect(Collectors.toList());
+            // Retrieve the manager's subordinates without mapping to DTO
+            List<Courier> subordinates = manager.getSubordinates();
 
             // Count delivered packages for each direct subordinate
-            for (CourierDTO subordinate : subordinates) {
+            for (Courier subordinate : subordinates) {
                 List<Package> subordinatePackages = packageRepository.findDeliveredPackagesByCourierId(subordinate.getId());
                 deliveredCount += subordinatePackages.size();
             }
 
-            // Create response map
+            // Create response map with `Courier` entities directly
             Map<String, Object> response = new HashMap<>();
             response.put("managerId", manager.getId());
             response.put("managerName", manager.getName());
             response.put("deliveredCount", deliveredCount);
-            response.put("subordinates", subordinates);
+            response.put("subordinates", subordinates); // No DTO mapping, just the list of `Courier` entities
 
             return response;
         }
 
         return new HashMap<>();
     }
-
 
 
     public Courier updateCourier(Integer id, Courier updatedCourier) {
@@ -108,7 +95,7 @@ public class CourierService {
         return courierRepository.save(existingCourier);
     }
 
-
+/*
     public boolean login(CourierLoginDTO credentials)
     {
         Courier courier = courierRepository.findByEmail(credentials.getEmail());
@@ -120,6 +107,6 @@ public class CourierService {
         return false;
 
     }
-
+*/
 
 }

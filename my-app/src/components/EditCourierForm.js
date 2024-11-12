@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getCourierById, updateCourier } from '../services/api';
+import { getCourierById, updateCourier, getAllCouriers } from '../services/api';
 
 const EditCourierForm = () => {
   const { id } = useParams();
@@ -8,26 +8,39 @@ const EditCourierForm = () => {
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [managerId, setManagerId] = useState('');
+  const [managerId, setManagerId] = useState(null); // Initially set to null
+  const [couriers, setCouriers] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [initialData, setInitialData] = useState({});
 
   useEffect(() => {
+    // Fetch the courier being edited
     const fetchCourier = async () => {
       try {
         const { data } = await getCourierById(id);
         if (data) {
-          setName(data.name);
-          setEmail(data.email);
-          setManagerId(data.manager_id || '');
-          setInitialData(data); // Store initial data for comparison
+          setName(data.name || '');
+          setEmail(data.email || '');
+          setManagerId(data.manager_id || null); // Initialize managerId to existing value or null
         }
       } catch (err) {
         setError('Failed to load courier details.');
+        console.error("Fetch error:", err);
       }
     };
+
+    // Fetch all couriers for the manager selection dropdown
+    const fetchCouriers = async () => {
+      try {
+        const { data } = await getAllCouriers();
+        setCouriers(data);
+      } catch (err) {
+        setError('Failed to load couriers.');
+      }
+    };
+
     fetchCourier();
+    fetchCouriers();
   }, [id]);
 
   const handleSubmit = async (e) => {
@@ -35,11 +48,12 @@ const EditCourierForm = () => {
     setLoading(true);
     setError('');
 
+    // Ensure that managerId is correctly set to null if no manager is selected
     const courierData = {
       id,
-      ...(name !== initialData.name && { name }),  // Include if changed
-      ...(email !== initialData.email && { email }), // Include if changed
-      ...(managerId !== initialData.manager_id && { manager_id: managerId }), // Include if changed
+      name,
+      email,
+      managerId: managerId || null, // Nullify managerId if not selected
     };
 
     try {
@@ -47,6 +61,7 @@ const EditCourierForm = () => {
       navigate('/couriers');
     } catch (err) {
       setError('Failed to update courier. Please try again.');
+      console.error("Update error:", err.response?.data || err.message);
     } finally {
       setLoading(false);
     }
@@ -80,13 +95,21 @@ const EditCourierForm = () => {
         </label>
 
         <label style={styles.label}>
-          Manager ID:
-          <input
-            type="text"
-            value={managerId}
-            onChange={(e) => setManagerId(e.target.value)}
-            style={styles.input}
-          />
+          Manager:
+          <select
+            value={managerId || ''} // Use empty string if managerId is null
+            onChange={(e) => setManagerId(e.target.value === '' ? null : e.target.value)} // Set managerId to null if 'No manager' is selected
+            style={styles.select}
+          >
+            <option value="">No manager</option> {/* Option for null manager */}
+            {couriers
+              .filter(courier => String(courier.id) !== String(id)) // Exclude the current courier from being its own manager
+              .map(courier => (
+                <option key={courier.id} value={courier.id}>
+                  {courier.name}
+                </option>
+              ))}
+          </select>
         </label>
 
         <button type="submit" disabled={loading} style={styles.button}>
@@ -98,6 +121,8 @@ const EditCourierForm = () => {
     </div>
   );
 };
+
+
 
 // Define your styles object here
 const styles = {
@@ -131,6 +156,14 @@ const styles = {
     fontSize: '16px',
     color: '#333',
     textAlign: 'left', // Align labels to the left within the centered form
+  },
+  select: {
+    margin: '10px 0',
+    padding: '12px',
+    width: '100%',
+    border: '1px solid #ddd',
+    borderRadius: '5px',
+    fontSize: '16px',
   },
   input: {
     marginTop: '5px',

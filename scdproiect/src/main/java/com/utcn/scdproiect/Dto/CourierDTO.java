@@ -2,15 +2,13 @@ package com.utcn.scdproiect.Dto;
 
 import com.utcn.scdproiect.Courier.Courier;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
 @Getter
 @Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class CourierDTO {

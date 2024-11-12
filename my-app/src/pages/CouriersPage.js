@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getAllCouriers, deleteCourier } from '../services/api';
 
 function CouriersPage() {
   const [couriers, setCouriers] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchCouriers() {
@@ -34,6 +35,7 @@ function CouriersPage() {
         All Couriers
         <Link to="/register" style={styles.addButton}>Add Courier</Link>
       </h2>
+
       {couriers.length === 0 ? (
         <p style={styles.emptyMessage}>No couriers available.</p>
       ) : (
@@ -56,20 +58,46 @@ function CouriersPage() {
                 <td style={styles.td}>
                   {courier.managerId ? courier.managerId : 'N/A'}
                 </td>
-                <td style={styles.td}>
-                  <Link to={`/edit-courier/${courier.id}`} style={styles.editButton}>Edit</Link>
-                  <button 
-                    onClick={() => handleDelete(courier.id)} 
-                    style={styles.deleteButton}
-                  >
-                    Delete
-                  </button>
+                <td style={styles.actionsCell}>
+                  <div style={styles.actionsContainer}>
+                    <Link 
+                      to={`/courier/${courier.id}/packages`} 
+                      style={styles.showButton}
+                    >
+                      Show Packages
+                    </Link>
+                    <Link 
+                      to={`/edit-courier/${courier.id}`} 
+                      style={styles.editButton}
+                    >
+                      Edit
+                    </Link>
+                    <button 
+                      onClick={() => handleDelete(courier.id)} 
+                      style={styles.deleteButton}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       )}
+
+      {/* Navigation Buttons */}
+      <div style={styles.buttonContainer}>
+        <button onClick={() => navigate('/couriers/withoutPending')} style={styles.navButton}>
+          View Couriers Without Pending Packages
+        </button>
+        <button onClick={() => navigate('/couriers/managers/deliveredCount')} style={styles.navButton}>
+          View Managers and Delivered Package Count
+        </button>
+        <button onClick={() => navigate('/couriers/managers/deliveredPackages')} style={styles.navButton}>
+          View Managers with Delivered Packages
+        </button>
+      </div>
     </div>
   );
 }
@@ -117,6 +145,47 @@ const styles = {
     border: '1px solid #ddd',
     textAlign: 'left',
   },
+  actionsCell: {
+    border: '1px solid #ddd',
+    padding: '0', // Remove internal padding to minimize space
+    textAlign: 'center',
+    width: '300px', // Slightly more space for buttons
+    paddingLeft: '10px', // Add 1cm on the left (10px for small space)
+    paddingRight: '10px', // Add 1cm on the right
+  },
+  actionsContainer: {
+    display: 'flex',
+    gap: '4px',
+    justifyContent: 'center',
+  },
+  showButton: {
+    padding: '3px 6px',
+    backgroundColor: '#28a745', // Green for show packages
+    color: 'white',
+    borderRadius: '5px',
+    textDecoration: 'none',
+    fontSize: '12px',
+    minWidth: '45px',
+  },
+  editButton: {
+    padding: '3px 6px',
+    backgroundColor: '#f4c542', // Yellow for edit
+    color: 'black',
+    borderRadius: '5px',
+    textDecoration: 'none',
+    fontSize: '12px',
+    minWidth: '45px',
+  },
+  deleteButton: {
+    padding: '3px 6px',
+    backgroundColor: '#dc3545', // Red for delete
+    color: 'white',
+    borderRadius: '5px',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '12px',
+    minWidth: '45px',
+  },
   addButton: {
     padding: '10px 15px',
     backgroundColor: '#007bff',
@@ -124,21 +193,20 @@ const styles = {
     borderRadius: '5px',
     textDecoration: 'none',
   },
-  editButton: {
-    padding: '5px 10px',
-    backgroundColor: '#ffc107',
-    color: 'black',
-    borderRadius: '5px',
-    textDecoration: 'none',
-    marginRight: '10px',
+  buttonContainer: {
+    marginTop: '20px',
+    display: 'flex',
+    justifyContent: 'space-between',
   },
-  deleteButton: {
-    padding: '5px 10px',
-    backgroundColor: '#dc3545',
+  navButton: {
+    padding: '10px 20px',
+    backgroundColor: '#28a745',
     color: 'white',
-    borderRadius: '5px',
     border: 'none',
+    borderRadius: '5px',
     cursor: 'pointer',
+    textDecoration: 'none',
+    transition: 'background-color 0.3s ease',
   },
 };
 

@@ -1,6 +1,4 @@
 package com.utcn.scdproiect.Courier;
-import com.utcn.scdproiect.Dto.CourierDTO;
-import com.utcn.scdproiect.Dto.CourierLoginDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -8,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+
 
 @CrossOrigin(origins = "http://localhost:3000") // Allow requests from this origin
 @RestController
@@ -19,28 +17,13 @@ public class CourierController {
     private CourierService courierService;
 
     @GetMapping
-    public List<CourierDTO> getAllCouriers() {
-
-        return courierService.getAllCouriers().stream().map(courier -> new CourierDTO(
-                        courier.getId(),
-                        courier.getName(),
-                        courier.getEmail(),
-                        courier.getManagerId() != null ? courier.getManagerId() : null,
-                        courier.getSubordinates()  // Assuming subordinates is a collection
-                ))
-                .collect(Collectors.toList());
+    public List<Courier> getAllCouriers() {
+        return courierService.getAllCouriers();
     }
 
     @GetMapping("/withoutPending")
-    public List<CourierDTO> getCouriersWithoutPending() {
-        return courierService.getAllWithoutPendingPackages().stream().map(courier -> new CourierDTO(
-                        courier.getId(),
-                        courier.getName(),
-                        courier.getEmail(),
-                        courier.getManagerId() != null ? courier.getManagerId() : null,
-                        courier.getSubordinates()  // Assuming subordinates is a collection
-                ))
-                .collect(Collectors.toList());
+    public List<Courier> getCouriersWithoutPending() {
+        return courierService.getAllWithoutPendingPackages();
     }
 
     @GetMapping("/managers/deliveredCount")
@@ -49,16 +32,8 @@ public class CourierController {
     }
 
     @GetMapping("/managers/getAllManagersWithDeliveredPackages")
-    public List<CourierDTO> getAllManagersWithDeliveredPackages() {
-        return courierService.getAllManagersWithDeliveredPackages().stream()
-                .map(courier -> new CourierDTO(
-                        courier.getId(),
-                        courier.getName(),
-                        courier.getEmail(),
-                        courier.getManagerId() != null ? courier.getManagerId() : null,
-                        courier.getSubordinates()  // Assuming subordinates is a collection
-                ))
-                .collect(Collectors.toList());
+    public List<Courier> getAllManagersWithDeliveredPackages() {
+        return courierService.getAllManagersWithDeliveredPackages();
     }
 
 
@@ -96,18 +71,12 @@ public class CourierController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CourierDTO> getCourierById(@PathVariable Integer id) {
+    public ResponseEntity<Courier> getCourierById(@PathVariable Integer id) {
         Courier courier = courierService.getCourierById(id);
 
         if (courier != null) {
-            CourierDTO courierDTO = new CourierDTO(
-                    courier.getId(),
-                    courier.getName(),
-                    courier.getEmail(),
-                    courier.getManagerId() != null ? courier.getManagerId() : null,
-                    courier.getSubordinates() // Assuming subordinates is a collection
-            );
-            return new ResponseEntity<>(courierDTO, HttpStatus.OK);
+
+            return new ResponseEntity<>(courier, HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
