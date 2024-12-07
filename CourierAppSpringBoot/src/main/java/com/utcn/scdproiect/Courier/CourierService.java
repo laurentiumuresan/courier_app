@@ -1,8 +1,13 @@
 package com.utcn.scdproiect.Courier;
 import com.utcn.scdproiect.Pkg.Package;
 import com.utcn.scdproiect.Pkg.PackageRepository;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -16,6 +21,11 @@ public class CourierService {
     @Autowired
     private PackageRepository packageRepository;
 
+    @Autowired
+    private JavaMailSender mailSender;
+
+    @Value("${spring.mail.username}")
+    private String senderEmail;
 
     public List<Courier> getAllCouriers() {
         return courierRepository.findAll();
@@ -64,12 +74,11 @@ public class CourierService {
                 deliveredCount += subordinatePackages.size();
             }
 
-            // Create response map with `Courier` entities directly
             Map<String, Object> response = new HashMap<>();
             response.put("managerId", manager.getId());
             response.put("managerName", manager.getName());
             response.put("deliveredCount", deliveredCount);
-            response.put("subordinates", subordinates); // No DTO mapping, just the list of `Courier` entities
+            response.put("subordinates", subordinates);
 
             return response;
         }
@@ -95,6 +104,25 @@ public class CourierService {
         return courierRepository.save(existingCourier);
     }
 
+    public void sendEmailToCourier(Integer courierId, String subject, String messageBody) throws MessagingException {
+
+        Courier courier = courierRepository.findById(courierId)
+                .orElseThrow(() -> new EntityNotFoundException("Courier not found with id: " + courierId));
+
+        if (courier.getEmail() == null || courier.getEmail().isEmpty()) {
+            throw new IllegalArgumentException("Courier does not have a valid email address");
+        }
+
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+        helper.setFrom(senderEmail);
+        helper.setTo(courier.getEmail());
+        helper.setSubject(subject);
+        helper.setText(messageBody, true); // true pentru HTML
+
+        mailSender.send(message);
+    }
 /*
     public boolean login(CourierLoginDTO credentials)
     {

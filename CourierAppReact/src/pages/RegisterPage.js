@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
+import { register } from '../services/api'; // Import the correct function
 
-// RegisterForm Component
 const RegisterForm = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -13,13 +13,12 @@ const RegisterForm = () => {
     setError('');
 
     try {
-      // Simulating a register call
-      await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulăm un apel API
+      await register({ name, email }); // No password included in the register function call
       alert('Registration successful!');
-      setName('');
+      setName(''); // Reset form fields
       setEmail('');
     } catch (err) {
-      console.error('Error registering:', err);
+      console.error("Error registering:", err);
       setError('Registration failed. Please try again.');
     } finally {
       setLoading(false);

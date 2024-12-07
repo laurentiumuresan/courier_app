@@ -1,4 +1,6 @@
 package com.utcn.scdproiect.Courier;
+import jakarta.mail.MessagingException;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -64,7 +66,6 @@ public class CourierController {
         return ResponseEntity.ok(courier);
     }
 
-
     @DeleteMapping("/{id}")
     public void deleteCourier(@PathVariable Integer id) {
         courierService.deleteCourier(id);
@@ -81,6 +82,37 @@ public class CourierController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
+    @PostMapping("/{id}/send-email")
+    public ResponseEntity<String> sendEmailToCourier(
+            @PathVariable("id") Integer courierId,
+            @RequestBody Map<String, String> requestBody) {
+        try {
+            // Extrage "subject" și "body" din corpul cererii
+            String subject = requestBody.get("subject");
+            String body = requestBody.get("body");
+
+            // Validează câmpurile
+            if (subject == null || subject.isEmpty()) {
+                return ResponseEntity.badRequest().body("Subject is required");
+            }
+            if (body == null || body.isEmpty()) {
+                return ResponseEntity.badRequest().body("Body is required");
+            }
+
+            // Apelează metoda din serviciu
+            courierService.sendEmailToCourier(courierId, subject, body);
+            return ResponseEntity.ok("Email sent successfully to courier with ID " + courierId);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Failed to send email: " + e.getMessage());
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 
     // Method to check if the managerId is valid
     private boolean isValidManagerId(Integer managerId) {
