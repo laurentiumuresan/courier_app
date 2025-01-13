@@ -60,12 +60,10 @@ const AddPackageForm = () => {
   );
 };
 
-// AddPackagePage Component
 const AddPackagePage = () => {
   return <AddPackageForm />;
 };
 
-// Define your styles object here
 const styles = {
   container: {
     display: 'flex',

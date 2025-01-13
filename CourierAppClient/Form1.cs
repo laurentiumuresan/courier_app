@@ -25,24 +25,44 @@ namespace CourierAppClient
             comboBoxStatus.Items.AddRange(new string[] { "NEW", "NEW", "PENDING", "SHIPPED", "DELIVERED", "CANCELLED" });
             comboBoxStatus.SelectedIndex = 0;
 
+            LoadBusyCouriers();
             LoadCouriers();
         }
-        private void LoadCouriers()
+        private void LoadBusyCouriers()
         {
             try
             {
                 couriers = packageService.getBusyCouriers();
                 comboBoxCouriers.Items.Clear();
-                comboBoxMail.Items.Clear();
                 foreach (var courier in couriers)
                 {
                     comboBoxCouriers.Items.Add(courier.name);
-                    comboBoxMail.Items.Add(courier.email);
                 }
 
                 if (couriers.Count > 0)
                 {
                     comboBoxCouriers.SelectedIndex = 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading the couriers: {ex.Message}", "Error");
+            }
+        }
+
+        private void LoadCouriers()
+        {
+            try
+            {
+                couriers = courierService.getCouriers();
+                comboBoxMail.Items.Clear();
+                foreach (var courier in couriers)
+                {
+                    comboBoxMail.Items.Add(courier.email);
+                }
+
+                if (couriers.Count > 0)
+                {
                     comboBoxMail.SelectedIndex = 0;
                 }
             }
@@ -51,16 +71,18 @@ namespace CourierAppClient
                 MessageBox.Show($"Error loading the couriers: {ex.Message}", "Error");
             }
         }
+
         private void button1_Click(object sender, EventArgs e)
         {
             List<Package> packages = packageService.getPackages();
             listBox1.Items.Clear();
             foreach (Package package in packages)
             {
-                listBox1.Items.Add($"ID: {package.id}, Courier: {package.courier.name}");
+                string courierName = package.courier != null ? package.courier.name : "No courier";
+                listBox1.Items.Add($"ID: {package.id}, Courier: {courierName}");
             }
         }
-
+    
         private void button2_Click(object sender, EventArgs e)
         {
             string selectedStatus = comboBoxStatus.SelectedItem.ToString();
@@ -172,7 +194,7 @@ namespace CourierAppClient
                 var smtpClient = new SmtpClient("smtp.gmail.com")
                 {
                     Port = 587,
-                    Credentials = new NetworkCredential("laurentiueusebiu03@gmail.com", "loaw kepo wjeq jels"),
+                    Credentials = new NetworkCredential("laurentiueusebiu03@gmail.com", "***********"),
                     EnableSsl = true
                 };
 

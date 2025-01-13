@@ -113,7 +113,6 @@ public class CourierController {
         }
     }
 
-
     // Method to check if the managerId is valid
     private boolean isValidManagerId(Integer managerId) {
         // Check if the managerId exists among couriers
